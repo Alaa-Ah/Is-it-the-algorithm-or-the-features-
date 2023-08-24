@@ -52,6 +52,9 @@ def TrainBertSeqCl(model, train_dataloader, optimizer, scheduler): #, class_weig
     # For each batch of training data...
     for step, batch in enumerate(train_dataloader):
 
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        
         # Progress update every 40 batches.
         if step % 40 == 0 and not step == 0:
             # Calculate elapsed time in minutes.

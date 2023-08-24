@@ -2,8 +2,8 @@ from src.transformers_ML.config import *
 from src.classical_ML.src.vectorizer import Vectorizer
 
 data_dir = ARG_EXTRACTION_ROOT_DIR + '/corpora/parsed-corpora/'
-batch_size = 32
-max_seq_len = 128
+batch_size = 16
+max_seq_len = 64    
 
 
 class DataLoadHandler():
@@ -20,34 +20,69 @@ class DataLoadHandler():
             sentences_wd = json.load(j)
 
         # Lists to store feature values
-
-        sentence_position_list = []
+        
+        # Structural features
+        # is_first_sentence_list = []
+        # is_last_sentence_list = []
+        # is_in_introduction_list = []
+        # is_in_conclusion_list = []
+        # sentence_position_list = []
         number_of_tokens_list = []
         ponctuation_count_list = []
         question_mark_ending_list = []
 
-        
-        
-        
-        
+        # Lexical features
+        # lemma_array_list = []
+        pos_array_list = []
+        tense_array_list = []
+        entity_array_list = []
 
+        # Syntactic features
+        parse_tree_depth_list = []
+        number_of_subclauses_list = []
+
+    
         for index, sentence in enumerate(sentences_ess):
             features = vectorizer._GetSentenceFeatures(sentence)
 
             # Append feature values to lists
+            # is_first_sentence_list.append(features['is-first-sentence'])
+            # is_last_sentence_list.append(features['is-last-sentence'])
+            # is_in_introduction_list.append(features['is-in-introduction'])
+            # is_in_conclusion_list.append(features['is-in-conclusion'])
             number_of_tokens_list.append(features['number-of-tokens'])
-            sentence_position_list.append(features['sentence-position'])
+            # sentence_position_list.append(features['sentence-position'])
             ponctuation_count_list.append(features['number-of-ponctuation-marks'])
             question_mark_ending_list.append(features['question-mark-ending'])
+
+            # lemma_array_list.append(features['lemma-array'])
+            pos_array_list.append(features['pos-array'])
+            tense_array_list.append(features['tense-array'])
+            entity_array_list.append(features['entity-array'])
+
+            parse_tree_depth_list.append(features['parse-tree-depth'])
+            number_of_subclauses_list.append(features['number-of-subclauses'])
 
         for index, sentence in enumerate(sentences_wd):
             features = vectorizer._GetSentenceFeatures(sentence)
 
             # Append feature values to lists
+            # is_first_sentence_list.append(features['is-first-sentence'])
+            # is_last_sentence_list.append(features['is-last-sentence'])
+            # is_in_introduction_list.append(features['is-in-introduction'])
+            # is_in_conclusion_list.append(features['is-in-conclusion'])
             number_of_tokens_list.append(features['number-of-tokens'])
-            sentence_position_list.append(features['sentence-position'])
+            # sentence_position_list.append(features['sentence-position'])
             ponctuation_count_list.append(features['number-of-ponctuation-marks'])
             question_mark_ending_list.append(features['question-mark-ending'])
+
+            # lemma_array_list.append(features['lemma-array'])
+            pos_array_list.append(features['pos-array'])
+            tense_array_list.append(features['tense-array'])
+            entity_array_list.append(features['entity-array'])
+
+            parse_tree_depth_list.append(features['parse-tree-depth'])
+            number_of_subclauses_list.append(features['number-of-subclauses'])
 
         ess_df = pd.DataFrame(sentences_ess)
         ess_df = ess_df[['sent-text', 'sent-class']]
@@ -55,14 +90,25 @@ class DataLoadHandler():
         data_df = pd.concat([ess_df, web_df])
         
         # Adding new columns for calculated features
+        # data_df['is-first-sentence'] = is_first_sentence_list
+        # data_df['is-last-sentence'] = is_last_sentence_list
+        # data_df['is-in-introduction'] = is_in_introduction_list
+        # data_df['is-in-conclusion'] = is_in_conclusion_list
         data_df['number-of-tokens'] = number_of_tokens_list
-        data_df['sentence-position'] = sentence_position_list
+        # data_df['sentence-position'] = sentence_position_list
         data_df['ponctuation-count'] = ponctuation_count_list
         data_df['question-mark-ending'] = question_mark_ending_list
+        # data_df['lemma-array'] = lemma_array_list
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # data_df['pos-array'] = pos_array_list
+        # data_df['tense-array'] = tense_array_list
+        # data_df['entity-array'] = entity_array_list
+        data_df['parse-tree-depth'] = parse_tree_depth_list
+        data_df['number-of-subclauses'] = number_of_subclauses_list
 
         self.text_cols = ['sent-text']
         self.categorical_cols = ['question-mark-ending']
-        self.numerical_cols = ['number-of-tokens', 'sentence-position', 'ponctuation-count']
+        self.numerical_cols = ['number-of-tokens', 'ponctuation-count', 'parse-tree-depth', 'number-of-subclauses']
         self.label_col = 'sent-class'
 
         print(data_df['sent-class'].value_counts())
@@ -100,8 +146,6 @@ class DataLoadHandler():
         elif 'distilroberta-base' == TRANSFORMERS_MODEL_NAME:
             tokenizer = RobertaTokenizerFast.from_pretrained(TRANSFORMERS_MODEL_NAME, do_lower_case=True)
 
-        
-
         self.torch_train = load_data(
             self.train_df,
             self.text_cols,
@@ -111,8 +155,7 @@ class DataLoadHandler():
             label_col = self.label_col,
             sep_text_token_str = tokenizer.sep_token
             )
-        
-
+                
         self.torch_test = load_data(
             self.test_df,
             self.text_cols,
@@ -155,9 +198,6 @@ class DataLoadHandler():
         #     return_token_type_ids=False
         # )
 
-
-
-
         # loss, logits, layer_outs = model(
         #     model_inputs['input_ids'],
         #     token_type_ids = model_inputs['token_type_ids'],
@@ -165,7 +205,6 @@ class DataLoadHandler():
         #     cat_feats = self.categorical_cols,
         #     numerical_feats = self.numerical_cols
         #     )
-
 
         # training_args = TrainingArguments(
         #     output_dir = "./logs/model_name",
@@ -186,7 +225,7 @@ class DataLoadHandler():
 
         # trainer.train()
 
-    def GetDataLoaders(self, batch_size = 32):
+    def GetDataLoaders(self, batch_size = 16):
         # for train set
         # train_seq = torch.tensor(self.tokens_train['input_ids'])
         # train_mask = torch.tensor(self.tokens_train['attention_mask'])

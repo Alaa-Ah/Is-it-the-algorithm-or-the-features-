@@ -55,16 +55,16 @@ class Vectorizer():
         if params:
             max_lemma_gram, max_pos_gram, lemma_min_df, pos_min_df = params
 
-            # self.lemma_vectorizer = CountVectorizer(binary=True, lowercase=True, stop_words='english', encoding='utf-8', ngram_range=(1, max_lemma_gram), min_df=lemma_min_df)
-            # self.pos_vectorizer = CountVectorizer(binary=True, encoding='utf-8', ngram_range=(1, max_pos_gram), min_df=pos_min_df)
+            self.lemma_vectorizer = CountVectorizer(binary=True, lowercase=True, stop_words='english', encoding='utf-8', ngram_range=(1, max_lemma_gram), min_df=lemma_min_df)
+            self.pos_vectorizer = CountVectorizer(binary=True, encoding='utf-8', ngram_range=(1, max_pos_gram), min_df=pos_min_df)
             self.other_vectorizer = CountVectorizer(binary=True, encoding='utf-8')
         else:
-            # self.lemma_vectorizer = CountVectorizer(binary=True, lowercase=True, stop_words='english', encoding='utf-8', ngram_range=(1, 3), min_df=5)
-            # self.pos_vectorizer = CountVectorizer(binary=True, encoding='utf-8', ngram_range=(1, 2), min_df=3)
+            self.lemma_vectorizer = CountVectorizer(binary=True, lowercase=True, stop_words='english', encoding='utf-8', ngram_range=(1, 3), min_df=5)
+            self.pos_vectorizer = CountVectorizer(binary=True, encoding='utf-8', ngram_range=(1, 2), min_df=3)
             self.other_vectorizer = CountVectorizer(binary=True, encoding='utf-8')
 
-        # self.x_pos = []
-        # self.x_lemma = []
+        self.x_pos = []
+        self.x_lemma = []
         self.x_other = []
 
     def fit(self, sentences):
@@ -72,8 +72,8 @@ class Vectorizer():
         starting_time = time.time()
 
         self.x_other = self._GetDocumentTermsMatrices(sentences)
-        # self.lemma_vectorizer.fit(self.x_lemma)
-        # self.pos_vectorizer.fit(self.x_pos)
+        self.lemma_vectorizer.fit(self.x_lemma)
+        self.pos_vectorizer.fit(self.x_pos)
         self.other_vectorizer.fit(self.x_other)
 
         print('time {} s'.format(time.time() - starting_time))
@@ -94,10 +94,10 @@ class Vectorizer():
             print('Transforming all documents ...')
             x_other = self.x_pos, self.x_lemma, self.x_other
 
-        # x_lemma_vec = self.lemma_vectorizer.transform(x_lemma)
-        # x_pos_vec = self.pos_vectorizer.transform(x_pos)
+        x_lemma_vec = self.lemma_vectorizer.transform(x_lemma)
+        x_pos_vec = self.pos_vectorizer.transform(x_pos)
         x_other_vec = self.other_vectorizer.transform(x_other)
-        # x_vec = sparse.hstack((x_lemma_vec, x_pos_vec, x_other_vec), format='csr')
+        x_vec = sparse.hstack((x_lemma_vec, x_pos_vec, x_other_vec), format='csr')
         x_vec_normalized = normalize(x_vec, norm='l1', axis=0)
         print('time {} s'.format(time.time() - starting_time))
 
@@ -107,26 +107,26 @@ class Vectorizer():
         x_other = []
         for index, sentence in enumerate(sentences):
             features = self._GetSentenceFeatures(sentence)
-            # x_pos.append(' '.join(features['pos-array']))
-            # x_lemma.append(' '.join(features['lemma-array']))
+            self.x_pos.append(' '.join(features['pos-array']))
+            self.x_lemma.append(' '.join(features['lemma-array']))
             other = ''
-            # other += ('digitCount ' * features['digit-count'])
-            # other +=  ' '.join(features['entity-array']) + ' '
-            # other += ' '.join(features['tense-array']) + ' '
-            # other += ('parseTrHeight ' * features['parse-tree-depth'])
+            other += ('digitCount ' * features['digit-count'])
+            other +=  ' '.join(features['entity-array']) + ' '
+            other += ' '.join(features['tense-array']) + ' '
+            other += ('parseTrHeight ' * features['parse-tree-depth'])
             other += ('tokenCount' * features['number-of-tokens'])
-            # other += ('keyWordsCount ' * features['key-words-count'])
+            other += ('keyWordsCount ' * features['key-words-count'])
             # other += ('claimWordsCount' * features['claim-words-count'])
             # other += ('premiseWordsCount' * features['premise-words-count'])
             # other += features['tagArray'] + ' '
             other += ('sentencePosition ' * features['sentence-position'])
-            # other += ('subclauseCount ' * features['number-of-subclauses'])
+            other += ('subclauseCount ' * features['number-of-subclauses'])
             # achieved accuracy
             # acc 0.6428072600852872, 0.7093275488069414
-            # other += ('isFirstSentence ' * features['is-first-sentence'])
-            # other += ('isLastSentence ' * features['is-last-sentence'])
-            # other += ('isInIntroduction ' * features['is-in-introduction'])
-            # other += ('isInConclusion ' * features['is-in-conclusion'])
+            other += ('isFirstSentence ' * features['is-first-sentence'])
+            other += ('isLastSentence ' * features['is-last-sentence'])
+            other += ('isInIntroduction ' * features['is-in-introduction'])
+            other += ('isInConclusion ' * features['is-in-conclusion'])
             other += ('ponctuationCount ' * features['number-of-ponctuation-marks'])
             other += ('questionMarkEnding ' * features['question-mark-ending'])
             # achieved accuracy
@@ -158,8 +158,8 @@ class Vectorizer():
             if token.dep_ in ('xcomp', 'ccomp'): sub_clauses += 1
             if token.is_digit: digit_count += 1
             if 'PUNCT' == token.pos_: ponctuation_count += 1
-
-
+      
+        
         key_words_freq = _GetWordsFrequency(sentence['sent-text'], keyword_indicators)
         claim_words_freq = _GetWordsFrequency(sentence['sent-text'], claim_indicators)
         premise_words_freq = _GetWordsFrequency(sentence['sent-text'], premise_indicators)
@@ -168,11 +168,11 @@ class Vectorizer():
             ###########################
             # Structural features
             ###########################
-            'is-first-sentence' : (0 == sentence['sent-idx'])
-            ,'is-last-sentence' : sentence['is-last-sent']
-            ,'is-in-introduction' : (0 == sentence['parag-idx'])
-            ,'is-in-conclusion' : sentence['is-last-parag']
-            ,'sentence-position' : sentence['sent-idx']
+            'is-first-sentence' : (sentence.get('sent-idx') == 0 if 'sent-idx' in sentence else None)
+            ,'is-last-sentence' : sentence['is-last-sent'] if 'is-last-sent' in sentence else None
+            ,'is-in-introduction' : (sentence.get('parag-idx') == 0 if 'sent-idx' in sentence else None)
+            ,'is-in-conclusion' : sentence['is-last-parag'] if 'sent-idx' in sentence else None
+            ,'sentence-position' : sentence['sent-idx'] if 'sent-idx' in sentence else None
             ,'number-of-tokens' : len(tokens)
             ,'number-of-ponctuation-marks' : ponctuation_count
             ,'question-mark-ending' : ('?' == tokens[-1].text)
