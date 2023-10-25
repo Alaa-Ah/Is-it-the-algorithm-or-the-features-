@@ -94,9 +94,9 @@ class Vectorizer():
             print('Transforming all documents ...')
             x_other = self.x_pos, self.x_lemma, self.x_other
 
-        x_lemma_vec = self.lemma_vectorizer.transform(x_lemma)
-        x_pos_vec = self.pos_vectorizer.transform(x_pos)
-        x_other_vec = self.other_vectorizer.transform(x_other)
+        x_lemma_vec = self.lemma_vectorizer.transform(self.x_lemma)
+        x_pos_vec = self.pos_vectorizer.transform(self.x_pos)
+        x_other_vec = self.other_vectorizer.transform(self.x_other)
         x_vec = sparse.hstack((x_lemma_vec, x_pos_vec, x_other_vec), format='csr')
         x_vec_normalized = normalize(x_vec, norm='l1', axis=0)
         print('time {} s'.format(time.time() - starting_time))
@@ -136,7 +136,7 @@ class Vectorizer():
 
         return (x_other)
 
-    def _GetSentenceFeatures(self, sentence):
+    def     _GetSentenceFeatures(self, sentence):
 
         doc = nlp(sentence['sent-text'])
         pos_s, tag_s, lemma_s, entity_s, digit_count, tense_s = [], [], [], [], [], []

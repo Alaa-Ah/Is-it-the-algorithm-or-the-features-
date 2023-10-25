@@ -21,23 +21,24 @@ class DataLoadHandler():
 
         # Lists to store feature values
         
-        # Structural features
+        ## Structural features
         # is_first_sentence_list = []
         # is_last_sentence_list = []
         # is_in_introduction_list = []
         # is_in_conclusion_list = []
         # sentence_position_list = []
+        ## the above features are inconsistent and hence not included
         number_of_tokens_list = []
         ponctuation_count_list = []
         question_mark_ending_list = []
 
-        # Lexical features
-        # lemma_array_list = []
+        ## Lexical features
+        lemma_array_list = []
         pos_array_list = []
         tense_array_list = []
         entity_array_list = []
 
-        # Syntactic features
+        ## Syntactic features
         parse_tree_depth_list = []
         number_of_subclauses_list = []
 
@@ -45,7 +46,7 @@ class DataLoadHandler():
         for index, sentence in enumerate(sentences_ess):
             features = vectorizer._GetSentenceFeatures(sentence)
 
-            # Append feature values to lists
+            ## Append feature values to lists
             # is_first_sentence_list.append(features['is-first-sentence'])
             # is_last_sentence_list.append(features['is-last-sentence'])
             # is_in_introduction_list.append(features['is-in-introduction'])
@@ -55,10 +56,10 @@ class DataLoadHandler():
             ponctuation_count_list.append(features['number-of-ponctuation-marks'])
             question_mark_ending_list.append(features['question-mark-ending'])
 
-            # lemma_array_list.append(features['lemma-array'])
-            pos_array_list.append(features['pos-array'])
-            tense_array_list.append(features['tense-array'])
-            entity_array_list.append(features['entity-array'])
+            lemma_array_list.append(len(features['lemma-array']))
+            pos_array_list.append(len(features['pos-array']))
+            tense_array_list.append(len(features['tense-array']))
+            entity_array_list.append(len(features['entity-array']))
 
             parse_tree_depth_list.append(features['parse-tree-depth'])
             number_of_subclauses_list.append(features['number-of-subclauses'])
@@ -76,10 +77,10 @@ class DataLoadHandler():
             ponctuation_count_list.append(features['number-of-ponctuation-marks'])
             question_mark_ending_list.append(features['question-mark-ending'])
 
-            # lemma_array_list.append(features['lemma-array'])
-            pos_array_list.append(features['pos-array'])
-            tense_array_list.append(features['tense-array'])
-            entity_array_list.append(features['entity-array'])
+            lemma_array_list.append(len(features['lemma-array']))
+            pos_array_list.append(len(features['pos-array']))
+            tense_array_list.append(len(features['tense-array']))
+            entity_array_list.append(len(features['entity-array']))
 
             parse_tree_depth_list.append(features['parse-tree-depth'])
             number_of_subclauses_list.append(features['number-of-subclauses'])
@@ -98,17 +99,16 @@ class DataLoadHandler():
         # data_df['sentence-position'] = sentence_position_list
         data_df['ponctuation-count'] = ponctuation_count_list
         data_df['question-mark-ending'] = question_mark_ending_list
-        # data_df['lemma-array'] = lemma_array_list
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        # data_df['pos-array'] = pos_array_list
-        # data_df['tense-array'] = tense_array_list
-        # data_df['entity-array'] = entity_array_list
+        data_df['lemma-array'] = lemma_array_list
+        data_df['pos-array'] = pos_array_list
+        data_df['tense-array'] = tense_array_list
+        data_df['entity-array'] = entity_array_list
         data_df['parse-tree-depth'] = parse_tree_depth_list
         data_df['number-of-subclauses'] = number_of_subclauses_list
 
         self.text_cols = ['sent-text']
         self.categorical_cols = ['question-mark-ending']
-        self.numerical_cols = ['number-of-tokens', 'ponctuation-count', 'parse-tree-depth', 'number-of-subclauses']
+        self.numerical_cols = ['number-of-tokens', 'ponctuation-count', 'parse-tree-depth', 'number-of-subclauses', 'lemma-array', 'pos-array', 'entity-array', 'tense_array_list']
         self.label_col = 'sent-class'
 
         print(data_df['sent-class'].value_counts())
@@ -128,9 +128,6 @@ class DataLoadHandler():
         # self.test_text, self.test_labels = test_text, test_labels
         self.train_df = pd.concat([train_text, train_labels], axis=1)
         self.test_df = pd.concat([test_text, test_labels], axis=1)
-        print("===============================================================================================================================")
-        print(self.train_df.head())
-        print(self.test_df.head())
         self.TokenizeAndEncode()
 
     def TokenizeAndEncode(self):
@@ -151,6 +148,7 @@ class DataLoadHandler():
             self.text_cols,
             tokenizer,
             categorical_cols = self.categorical_cols,
+            categorical_encode_type='ohe',
             numerical_cols = self.numerical_cols,
             label_col = self.label_col,
             sep_text_token_str = tokenizer.sep_token
@@ -161,6 +159,7 @@ class DataLoadHandler():
             self.text_cols,
             tokenizer,
             categorical_cols = self.categorical_cols,
+            categorical_encode_type='ohe',
             numerical_cols = self.numerical_cols,
             label_col = self.label_col,
             sep_text_token_str = tokenizer.sep_token
